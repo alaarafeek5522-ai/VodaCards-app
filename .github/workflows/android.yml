@@ -1,4 +1,4 @@
-Entername: Build Vodafone Cards APK
+name: Build Vodafone Cards APK
 
 on:
   push:

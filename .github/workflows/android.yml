@@ -1,4 +1,4 @@
-name: Build Vodafone Cards APK
+Entername: Build Vodafone Cards APK
 
 on:
   push:
@@ -13,7 +13,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           java-version: '17'
-          distribution: 'temusu'
+          distribution: 'temurin'
       - uses: android-actions/setup-android@v3
       - run: chmod +x gradlew
       - run: ./gradlew assembleDebug

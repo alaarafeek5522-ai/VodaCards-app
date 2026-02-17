@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vodafone Cards | كروتي</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Cairo',sans-serif; }
+
+        body { min-height:100vh; background:#000; padding:15px; position:relative; }
+        body::before {
+            content:''; position:fixed; top:0; left:0; right:0; bottom:0;
+            background: radial-gradient(circle at 20% 50%, rgba(255,0,0,0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 50%, rgba(255,0,0,0.15) 0%, transparent 50%);
+            z-index:-1;
+        }
+
+        .header {
+            background: rgba(10,10,10,0.95); border: 2px solid #ff0000; border-radius: 25px;
+            padding: 15px 20px; margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
+        }
+        .header-left { display:flex; align-items:center; gap:10px; }
+        .header-left i { font-size:24px; color:#ff0000; text-shadow:0 0 15px #ff0000; }
+        .header-left h1 { color:white; font-size:clamp(18px,5vw,24px); font-weight:900; }
+        .header-left .num { background:#330000; color:#ff6666; padding:4px 12px; border-radius:15px; font-size:13px; border:1px solid #ff0000; }
+        .logout-btn {
+            background:#cc0000; border:none; color:white; padding:10px 18px;
+            border-radius:15px; font-size:14px; font-weight:900; cursor:pointer;
+            display:flex; align-items:center; gap:8px; transition:all 0.3s; text-decoration:none;
+        }
+        .logout-btn:hover { background:#ff0000; transform:translateY(-2px); }
+
+        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:15px; margin-bottom:20px; }
+        .stat-card {
+            background: rgba(10,10,10,0.95); border: 2px solid; border-radius:20px;
+            padding:15px; text-align:center; transition:all 0.3s;
+        }
+        .stat-card:hover { transform:translateY(-3px); }
+        .stat-card.total { border-color:#ff0000; }
+        .stat-card.available { border-color:#00ff00; }
+        .stat-card.amount { border-color:#ffd700; }
+        .stat-icon { font-size:28px; margin-bottom:8px; }
+        .stat-card.total .stat-icon { color:#ff0000; }
+        .stat-card.available .stat-icon { color:#00ff00; }
+        .stat-card.amount .stat-icon { color:#ffd700; }
+        .stat-value { font-size:28px; font-weight:900; color:white; }
+        .stat-label { color:#999; font-size:12px; margin-top:4px; }
+
+        .search-bar {
+            background:rgba(10,10,10,0.95); border:2px solid #660000; border-radius:20px;
+            padding:12px 20px; margin-bottom:20px;
+            display:flex; gap:10px; align-items:center;
+        }
+        .search-bar i { color:#ff0000; font-size:18px; }
+        .search-bar input {
+            background:transparent; border:none; color:white; font-size:15px; width:100%; outline:none;
+            font-family:'Cairo',sans-serif;
+        }
+        .search-bar input::placeholder { color:#555; }
+
+        .cards-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:20px; }
+
+        .card-item {
+            background:rgba(15,0,0,0.95); border:2px solid #660000; border-radius:25px;
+            padding:20px; transition:all 0.3s; position:relative; overflow:hidden;
+        }
+        .card-item::before {
+            content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%;
+            background:radial-gradient(circle, rgba(255,0,0,0.05) 0%, transparent 60%);
+            pointer-events:none;
+        }
+        .card-item:hover { border-color:#ff0000; transform:translateY(-5px); box-shadow:0 15px 30px rgba(255,0,0,0.3); }
+
+        .card-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
+        .card-num-badge { background:#330000; color:#ffd700; padding:6px 12px; border-radius:10px; font-size:13px; font-weight:900; }
+        .card-status { background:rgba(0,180,0,0.2); border:1px solid #00ff00; color:#00ff00; padding:5px 12px; border-radius:10px; font-size:12px; }
+
+        .card-code-box {
+            background:#0a0a0a; border:2px solid #660000; border-radius:15px;
+            padding:15px; text-align:center; margin:15px 0;
+            font-family:monospace; font-size:clamp(16px,4vw,22px); color:#00ff00; font-weight:bold;
+            direction:ltr; letter-spacing:1px; cursor:pointer; transition:all 0.3s;
+        }
+        .card-code-box:hover { border-color:#00ff00; box-shadow:0 0 20px rgba(0,255,0,0.3); }
+        .card-code-box:active { transform:scale(0.97); }
+
+        .card-info-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:15px 0; }
+        .info-box { background:rgba(139,0,0,0.15); border:1px solid #660000; border-radius:12px; padding:10px; text-align:center; }
+        .info-box .label { color:#ff9999; font-size:11px; margin-bottom:4px; }
+        .info-box .value { color:white; font-size:16px; font-weight:900; }
+
+        .card-serial { background:#0a0a0a; border:1px dashed #440000; border-radius:10px; padding:8px; text-align:center; font-family:monospace; color:#666; font-size:11px; direction:ltr; margin-top:10px; }
+
+        .copy-btn {
+            width:100%; padding:10px; background:#1a0000; border:2px solid #660000;
+            border-radius:12px; color:#ff9999; font-size:14px; font-weight:700;
+            cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+            transition:all 0.3s; margin-top:12px; font-family:'Cairo',sans-serif;
+        }
+        .copy-btn:hover { background:#330000; border-color:#ff0000; color:white; }
+        .copy-btn.copied { background:rgba(0,100,0,0.3); border-color:#00ff00; color:#00ff00; }
+
+        .loading-screen {
+            position:fixed; top:0; left:0; right:0; bottom:0;
+            background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center;
+            z-index:9999;
+        }
+        .loading-spinner { font-size:60px; color:#ff0000; animation:spin 1s linear infinite; margin-bottom:20px; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        .loading-text { color:#ff6666; font-size:18px; font-weight:700; }
+        .loading-sub { color:#663333; font-size:14px; margin-top:10px; }
+
+        .empty-state { grid-column:1/-1; text-align:center; padding:60px 20px; }
+        .empty-state i { font-size:60px; color:#330000; margin-bottom:20px; }
+        .empty-state h3 { color:#663333; font-size:22px; font-weight:900; }
+        .empty-state p { color:#442222; margin-top:10px; font-size:14px; }
+
+        .error-box { background:rgba(139,0,0,0.2); border:2px solid #ff0000; border-radius:20px; padding:20px; color:#ffaaaa; text-align:center; margin:20px 0; }
+
+        .footer { margin-top:30px; text-align:center; color:#332222; padding:15px; }
+
+        .refresh-btn {
+            background:#330000; border:2px solid #660000; border-radius:15px;
+            padding:10px 20px; color:#ff9999; font-size:14px; font-weight:700;
+            cursor:pointer; display:flex; align-items:center; gap:8px;
+            transition:all 0.3s; font-family:'Cairo',sans-serif;
+        }
+        .refresh-btn:hover { background:#550000; border-color:#ff0000; color:white; }
+
+        .toast {
+            position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
+            background:rgba(0,100,0,0.9); border:2px solid #00ff00; color:#aaffaa;
+            padding:12px 25px; border-radius:20px; font-size:15px; font-weight:700;
+            z-index:9999; opacity:0; transition:opacity 0.3s; pointer-events:none;
+        }
+        .toast.show { opacity:1; }
+    </style>
+</head>
+<body>
+
+    <!-- شاشة التحميل -->
+    <div class="loading-screen" id="loadingScreen">
+        <i class="fas fa-spinner loading-spinner"></i>
+        <div class="loading-text">جاري جلب كروتك...</div>
+        <div class="loading-sub">⌯ Virus Net ⌯</div>
+    </div>
+
+    <div id="mainContent" style="display:none;">
+        <!-- الهيدر -->
+        <div class="header">
+            <div class="header-left">
+                <i class="fas fa-credit-card"></i>
+                <div>
+                    <h1>كروتي <span class="num" id="userNumber"></span></h1>
+                </div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="refresh-btn" onclick="loadCards()"><i class="fas fa-sync-alt"></i> تحديث</button>
+                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> خروج</button>
+            </div>
+        </div>
+
+        <!-- الإحصائيات -->
+        <div class="stats-grid">
+            <div class="stat-card total">
+                <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
+                <div class="stat-value" id="totalCards">0</div>
+                <div class="stat-label">إجمالي الكروت</div>
+            </div>
+            <div class="stat-card available">
+                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-value" id="availableCards">0</div>
+                <div class="stat-label">متاحة</div>
+            </div>
+            <div class="stat-card amount">
+                <div class="stat-icon"><i class="fas fa-coins"></i></div>
+                <div class="stat-value" id="totalUnits">0</div>
+                <div class="stat-label">وحدات</div>
+            </div>
+        </div>
+
+        <!-- البحث -->
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="ابحث عن كارت..." oninput="filterCards()">
+        </div>
+
+        <!-- رسالة خطأ -->
+        <div id="errorBox" style="display:none;" class="error-box">
+            <i class="fas fa-exclamation-triangle" style="font-size:30px;margin-bottom:10px;"></i>
+            <div id="errorText"></div>
+        </div>
+
+        <!-- الكروت -->
+        <div class="cards-grid" id="cardsGrid"></div>
+
+        <div class="footer"><p>⌯ Virus Net ⌯ | Vodafone Cards</p></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let allCards = [];
+        const token = sessionStorage.getItem('vodafone_token');
+        const number = sessionStorage.getItem('vodafone_number');
+
+        // التحقق من تسجيل الدخول
+        if (!token || !number) {
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('userNumber').textContent = number;
+
+        function showToast(msg, success=true) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.background = success ? 'rgba(0,100,0,0.9)' : 'rgba(139,0,0,0.9)';
+            t.style.borderColor = success ? '#00ff00' : '#ff0000';
+            t.style.color = success ? '#aaffaa' : '#ffaaaa';
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        function copyCode(code, btn) {
+            navigator.clipboard.writeText(code).then(() => {
+                btn.innerHTML = '<i class="fas fa-check"></i> تم النسخ!';
+                btn.classList.add('copied');
+                showToast('✅ تم نسخ الكود: ' + code);
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fas fa-copy"></i> نسخ الكود';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function extractCardsFromData(data) {
+            const cards = [];
+            function iterate(node) {
+                if (Array.isArray(node) || (typeof node === 'object' && node !== null)) {
+                    if (node.characteristics && Array.isArray(node.characteristics)) {
+                        const charMap = {};
+                        node.characteristics.forEach(c => {
+                            if (c && c.name) charMap[c.name] = c.value ?? null;
+                        });
+                        if (charMap['CARD_SERIAL']) {
+                            cards.push({
+                                serialNumber: charMap['CARD_SERIAL'],
+                                units: charMap['GIFT_UNITS'] ?? 'غير محدد',
+                                remaining: charMap['REMAINING_DEDICATIONS'] ?? 'غير محدد',
+                                amount: charMap['AMOUNT'] ?? 'غير محدد',
+                                code: `*858*${charMap['CARD_SERIAL']}#`,
+                                status: 'available'
+                            });
+                        }
+                    }
+                    Object.values(node).forEach(v => iterate(v));
+                }
+            }
+            iterate(data);
+            return cards;
+        }
+
+        async function loadCards() {
+            document.getElementById('loadingScreen').style.display = 'flex';
+            document.getElementById('mainContent').style.display = 'none';
+            document.getElementById('errorBox').style.display = 'none';
+
+            try {
+                const url = `https://web.vodafone.com.eg/services/dxl/ramadanpromo/promotion?@type=RamadanHub&channel=website&msisdn=${number}`;
+
+                const response = await fetch(url, {
+                    headers: {
+                        'Host': 'web.vodafone.com.eg',
+                        'msisdn': number,
+                        'api-host': 'PromotionHost',
+                        'Accept-Language': 'AR',
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                        'clientId': 'WebsiteConsumer',
+                        'User-Agent': 'Mozilla/5.0 (Linux; Android 9; CPH2083) AppleWebKit/537.36',
+                        'channel': 'WEB',
+                        'Accept': 'application/json',
+                        'Referer': 'https://web.vodafone.com.eg/spa/portal/hub'
+                    }
+                });
+
+                if (!response.ok) throw new Error(`خطأ ${response.status} - انتهت صلاحية الجلسة`);
+                const data = await response.json();
+                allCards = extractCardsFromData(data);
+                renderCards(allCards);
+
+            } catch(e) {
+                document.getElementById('errorBox').style.display = 'block';
+                document.getElementById('errorText').textContent = e.message || 'خطأ في جلب البيانات';
+                allCards = [];
+                renderCards([]);
+            }
+
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+        }
+
+        function renderCards(cards) {
+            const grid = document.getElementById('cardsGrid');
+            document.getElementById('totalCards').textContent = cards.length;
+            document.getElementById('availableCards').textContent = cards.length;
+            let totalUnits = 0;
+            cards.forEach(c => { if (!isNaN(parseInt(c.units))) totalUnits += parseInt(c.units); });
+            document.getElementById('totalUnits').textContent = totalUnits || '—';
+
+            if (cards.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-credit-card"></i>
+                        <h3>لا توجد كروت</h3>
+                        <p>لم يتم العثور على كروت متاحة</p>
+                    </div>`;
+                return;
+            }
+
+            grid.innerHTML = cards.map((card, i) => `
+                <div class="card-item">
+                    <div class="card-top">
+                        <span class="card-num-badge">🎴 كارت #${i+1}</span>
+                        <span class="card-status"><i class="fas fa-check-circle"></i> متاح</span>
+                    </div>
+
+                    <div class="card-code-box" onclick="copyCodeDirect('${card.code}')">
+                        ${card.code}
+                    </div>
+
+                    <div class="card-info-grid">
+                        <div class="info-box">
+                            <div class="label">الوحدات</div>
+                            <div class="value">${card.units}</div>
+                        </div>
+                        <div class="info-box">
+                            <div class="label">المتبقي</div>
+                            <div class="value">${card.remaining}</div>
+                        </div>
+                    </div>
+
+                    <div class="card-serial">${card.serialNumber}</div>
+
+                    <button class="copy-btn" id="btn-${i}" onclick="copyCode('${card.code}', document.getElementById('btn-${i}'))">
+                        <i class="fas fa-copy"></i> نسخ الكود
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function copyCodeDirect(code) {
+            navigator.clipboard.writeText(code).then(() => showToast('✅ تم النسخ: ' + code));
+        }
+
+        function filterCards() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allCards.filter(c =>
+                c.code.toLowerCase().includes(q) || c.serialNumber.toLowerCase().includes(q)
+            );
+            renderCards(filtered);
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        // تحميل الكروت
+        loadCards();
+    </script>
+</body>
+</html>

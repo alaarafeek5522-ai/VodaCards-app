@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>الغرفة السرية - Virus Net</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&display=swap');
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Cairo',sans-serif; }
+
+        body { min-height:100vh; background:#000; padding:15px; position:relative; }
+        body::before {
+            content:''; position:fixed; top:0; left:0; right:0; bottom:0;
+            background: radial-gradient(circle at 20% 50%, rgba(255,0,0,0.2) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 50%, rgba(255,0,0,0.2) 0%, transparent 50%);
+            z-index:-1;
+        }
+
+        .container { max-width:1400px; margin:0 auto; }
+
+        .header {
+            background:rgba(10,10,10,0.95); backdrop-filter:blur(10px);
+            border:2px solid #ff0000; border-radius:30px;
+            padding:20px 25px; margin-bottom:25px;
+            display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px;
+        }
+        .header-title { display:flex; align-items:center; gap:15px; }
+        .header-title i { font-size:28px; color:#ff0000; text-shadow:0 0 20px #ff0000; }
+        .header-title h1 { color:white; font-size:clamp(18px,5vw,26px); font-weight:900; }
+        .version { background:#330000; color:#ff6666; padding:4px 12px; border-radius:15px; font-size:12px; border:1px solid #ff0000; margin-right:8px; }
+        .logout-btn {
+            background:#cc0000; border:none; color:white; padding:10px 20px;
+            border-radius:15px; font-size:14px; font-weight:900; cursor:pointer;
+            display:flex; align-items:center; gap:8px; transition:all 0.3s;
+        }
+        .logout-btn:hover { background:#ff0000; transform:translateY(-2px); }
+
+        .section {
+            background:rgba(10,10,10,0.95); border:2px solid #ff0000; border-radius:25px;
+            padding:25px; margin-bottom:20px;
+        }
+        .section h2 { color:white; font-size:20px; font-weight:900; margin-bottom:20px; text-align:center; }
+
+        .input-group { margin-bottom:18px; }
+        .input-group label { display:block; color:#ffaaaa; font-size:14px; font-weight:700; margin-bottom:8px; }
+        .input-group label i { color:#ff0000; margin-left:5px; }
+        .input-field {
+            width:100%; padding:14px 18px;
+            background:rgba(30,0,0,0.8); border:2px solid #660000; border-radius:15px;
+            font-size:15px; color:white; transition:all 0.3s; font-family:'Cairo',sans-serif;
+        }
+        .input-field:focus { outline:none; border-color:#ff0000; box-shadow:0 0 20px rgba(255,0,0,0.3); }
+
+        .type-options { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:15px 0; }
+        .type-card {
+            background:rgba(20,0,0,0.8); border:2px solid #660000; border-radius:18px;
+            padding:18px; text-align:center; cursor:pointer; transition:all 0.3s;
+        }
+        .type-card:hover { transform:translateY(-3px); border-color:#ff0000; }
+        .type-card.selected.raw { border-color:#ffaa00; background:rgba(255,170,0,0.15); box-shadow:0 0 20px rgba(255,170,0,0.3); }
+        .type-card.selected.extracted { border-color:#00ff00; background:rgba(0,255,0,0.15); box-shadow:0 0 20px rgba(0,255,0,0.3); }
+        .type-icon { font-size:36px; margin-bottom:8px; }
+        .type-card.raw .type-icon { color:#ffaa00; }
+        .type-card.extracted .type-icon { color:#00ff00; }
+        .type-title { font-size:16px; font-weight:900; }
+        .type-card.raw .type-title { color:#ffaa00; }
+        .type-card.extracted .type-title { color:#00ff00; }
+
+        .fetch-btn {
+            width:100%; padding:14px; background:#cc0000; border:none; border-radius:15px;
+            color:white; font-size:17px; font-weight:900; cursor:pointer;
+            display:flex; align-items:center; justify-content:center; gap:10px;
+            transition:all 0.3s; margin-top:15px; font-family:'Cairo',sans-serif;
+        }
+        .fetch-btn:hover:not(:disabled) { background:#ff0000; transform:translateY(-2px); box-shadow:0 10px 20px rgba(255,0,0,0.4); }
+        .fetch-btn:disabled { opacity:0.5; cursor:not-allowed; }
+
+        .tabs { display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
+        .tab {
+            background:rgba(30,0,0,0.8); border:2px solid #660000; padding:9px 18px;
+            border-radius:12px; color:#ff9999; font-weight:700; cursor:pointer;
+            transition:all 0.3s; display:flex; align-items:center; gap:6px; font-family:'Cairo',sans-serif;
+            font-size:13px;
+        }
+        .tab:hover { border-color:#ff0000; color:white; }
+        .tab.active { background:#cc0000; border-color:#ff0000; color:white; }
+
+        .response-box { background:rgba(10,10,10,0.95); border:2px solid #ff0000; border-radius:20px; padding:20px; }
+        .resp-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px; }
+        .resp-header h3 { color:white; font-size:18px; font-weight:900; display:flex; align-items:center; gap:8px; }
+        .resp-header h3 i { color:#ff0000; }
+        .copy-btn {
+            background:#330000; border:2px solid #660000; color:#ff9999;
+            padding:7px 16px; border-radius:12px; font-size:13px; font-weight:700;
+            cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.3s;
+            font-family:'Cairo',sans-serif;
+        }
+        .copy-btn:hover { background:#660000; border-color:#ff0000; color:white; }
+
+        .code-view {
+            background:#050505; border:2px solid #330000; border-radius:15px;
+            padding:18px; max-height:500px; overflow:auto;
+            font-family:'Fira Code',monospace; direction:ltr; text-align:left;
+        }
+        .code-view pre { color:#00ff00; font-size:12px; line-height:1.7; white-space:pre-wrap; word-wrap:break-word; margin:0; }
+
+        .cards-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px; }
+        .card-box {
+            background:rgba(15,0,0,0.95); border:2px solid #660000; border-radius:20px;
+            padding:18px; transition:all 0.3s;
+        }
+        .card-box:hover { border-color:#ff0000; transform:translateY(-4px); box-shadow:0 10px 25px rgba(255,0,0,0.3); }
+        .card-header-b { background:#330000; border-radius:12px; padding:8px; text-align:center; margin-bottom:12px; }
+        .card-num { color:#ffd700; font-size:16px; font-weight:900; font-family:monospace; }
+        .card-code-b {
+            background:#0a0a0a; border:2px solid #660000; border-radius:12px;
+            padding:12px; text-align:center; direction:ltr;
+            font-family:monospace; font-size:18px; color:#00ff00; font-weight:bold; margin:12px 0;
+        }
+        .card-info-b { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:12px 0; }
+        .info-b { background:rgba(139,0,0,0.2); border:1px solid #660000; border-radius:10px; padding:8px; text-align:center; }
+        .info-b .lbl { color:#ff9999; font-size:11px; }
+        .info-b .val { color:white; font-size:15px; font-weight:900; }
+
+        .error-msg { background:rgba(139,0,0,0.2); border:2px solid #ff0000; border-radius:15px; padding:15px; color:#ffaaaa; display:flex; align-items:center; gap:10px; margin-bottom:15px; }
+        .hidden { display:none !important; }
+        .footer { margin-top:25px; text-align:center; color:#332222; padding:10px; }
+
+        @media(max-width:600px) { .type-options { grid-template-columns:1fr; } .cards-grid { grid-template-columns:1fr; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- الهيدر -->
+    <div class="header">
+        <div class="header-title">
+            <i class="fas fa-user-secret"></i>
+            <div>
+                <h1>الغرفة السرية <span class="version">v2.0 - Virus Net</span></h1>
+            </div>
+        </div>
+        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> خروج</button>
+    </div>
+
+    <!-- قسم الإدخال -->
+    <div class="section">
+        <h2>🔐 جلب بيانات فودافون (3 محاولات)</h2>
+
+        <div id="errorContainer"></div>
+
+        <div class="input-group">
+            <label><i class="fas fa-phone"></i> رقم الهاتف</label>
+            <input type="text" id="devNumber" class="input-field" placeholder="01XXXXXXXXX">
+        </div>
+        <div class="input-group">
+            <label><i class="fas fa-lock"></i> كلمة المرور</label>
+            <input type="password" id="devPassword" class="input-field" placeholder="••••••••">
+        </div>
+
+        <div class="type-options">
+            <div class="type-card raw" id="rawType" onclick="selectType('raw')">
+                <div class="type-icon"><i class="fas fa-code"></i></div>
+                <div class="type-title">الرد الخام</div>
+            </div>
+            <div class="type-card extracted selected" id="extractedType" onclick="selectType('extracted')">
+                <div class="type-icon"><i class="fas fa-credit-card"></i></div>
+                <div class="type-title">الكروت المستخرجة</div>
+            </div>
+        </div>
+
+        <button class="fetch-btn" id="fetchBtn" onclick="fetchData()">
+            <i class="fas fa-download"></i> جلب البيانات (3 محاولات)
+        </button>
+    </div>
+
+    <!-- التبويبات -->
+    <div id="tabsContainer" class="tabs hidden">
+        <div class="tab active" onclick="switchTab('cards')" id="tabCards"><i class="fas fa-credit-card"></i> الكروت</div>
+        <div class="tab" onclick="switchTab('raw')" id="tabRaw"><i class="fas fa-code"></i> الرد الخام</div>
+        <div class="tab" onclick="switchTab('attempts')" id="tabAttempts"><i class="fas fa-history"></i> المحاولات</div>
+        <div class="tab" onclick="switchTab('login')" id="tabLogin"><i class="fas fa-key"></i> معلومات الدخول</div>
+    </div>
+
+    <!-- قسم الكروت -->
+    <div id="cardsSection" class="hidden">
+        <div class="response-box">
+            <div class="resp-header">
+                <h3><i class="fas fa-credit-card"></i> الكروت المستخرجة</h3>
+                <div style="display:flex;gap:8px;">
+                    <span id="cardsCount" style="background:#330000;color:#00ff00;padding:6px 14px;border-radius:12px;font-size:13px;">0 كروت</span>
+                    <button class="copy-btn" onclick="copySection('cards')"><i class="fas fa-copy"></i> نسخ</button>
+                </div>
+            </div>
+            <div id="cardsContainer" class="cards-grid"></div>
+        </div>
+    </div>
+
+    <!-- قسم الخام -->
+    <div id="rawSection" class="hidden">
+        <div class="response-box">
+            <div class="resp-header">
+                <h3><i class="fas fa-code"></i> الرد الخام</h3>
+                <button class="copy-btn" onclick="copySection('raw')"><i class="fas fa-copy"></i> نسخ</button>
+            </div>
+            <div class="code-view"><pre id="rawPre"></pre></div>
+        </div>
+    </div>
+
+    <!-- قسم المحاولات -->
+    <div id="attemptsSection" class="hidden">
+        <div class="response-box">
+            <div class="resp-header">
+                <h3><i class="fas fa-history"></i> تفاصيل المحاولات</h3>
+                <button class="copy-btn" onclick="copySection('attempts')"><i class="fas fa-copy"></i> نسخ</button>
+            </div>
+            <div class="code-view"><pre id="attemptsPre"></pre></div>
+        </div>
+    </div>
+
+    <!-- قسم الدخول -->
+    <div id="loginSection" class="hidden">
+        <div class="response-box">
+            <div class="resp-header">
+                <h3><i class="fas fa-key"></i> معلومات الدخول</h3>
+                <button class="copy-btn" onclick="copySection('login')"><i class="fas fa-copy"></i> نسخ</button>
+            </div>
+            <div class="code-view"><pre id="loginPre"></pre></div>
+        </div>
+    </div>
+
+    <div class="footer"><p>🔥 نفس طريقة استخراج سكريبت Python - Virus Net</p></div>
+</div>
+
+<script>
+    const CLIENT_SECRET = '95fd95fb-7489-4958-8ae6-d31a525cd20a';
+    const CLIENT_ID = 'ana-vodafone-app';
+
+    let currentData = null;
+    let selectedType = 'extracted';
+
+    function selectType(type) {
+        selectedType = type;
+        document.getElementById('rawType').classList.remove('selected');
+        document.getElementById('extractedType').classList.remove('selected');
+        document.getElementById(type === 'raw' ? 'rawType' : 'extractedType').classList.add('selected');
+    }
+
+    function switchTab(tab) {
+        ['cards','raw','attempts','login'].forEach(t => {
+            document.getElementById(`tab${t.charAt(0).toUpperCase()+t.slice(1)}`).classList.remove('active');
+            document.getElementById(`${t}Section`).classList.add('hidden');
+        });
+        document.getElementById(`tab${tab.charAt(0).toUpperCase()+tab.slice(1)}`).classList.add('active');
+        document.getElementById(`${tab}Section`).classList.remove('hidden');
+    }
+
+    async function loginVodafone(number, password) {
+        const params = new URLSearchParams({
+            grant_type: 'password', username: number, password,
+            client_secret: CLIENT_SECRET, client_id: CLIENT_ID
+        });
+        const res = await fetch('https://mobile.vodafone.com.eg/auth/realms/vf-realm/protocol/openid-connect/token', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'User-Agent': 'okhttp/4.12.0', 'silentLogin': 'true',
+                'x-agent-operatingsystem': '13', 'clientId': 'AnaVodafoneAndroid',
+                'Accept-Language': 'ar', 'x-agent-device': 'Samsung SM-A225F',
+                'x-agent-version': '2026.1.1', 'x-agent-build': '1090',
+                'digitalId': '2541SAH7TTSET', 'device-id': '2475df1822633160'
+            },
+            body: params.toString()
+        });
+        const data = await res.json();
+        return { success: res.ok && !!data.access_token, token: data.access_token, response: data, http_code: res.status };
+    }
+
+    async function fetchPromo(number, token) {
+        const url = `https://web.vodafone.com.eg/services/dxl/ramadanpromo/promotion?@type=RamadanHub&channel=website&msisdn=${number}`;
+        const res = await fetch(url, {
+            headers: {
+                'msisdn': number, 'api-host': 'PromotionHost', 'Accept-Language': 'AR',
+                'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json',
+                'clientId': 'WebsiteConsumer',
+                'User-Agent': 'Mozilla/5.0 (Linux; Android 9; CPH2083) AppleWebKit/537.36',
+                'channel': 'WEB', 'Accept': 'application/json',
+                'Referer': 'https://web.vodafone.com.eg/spa/portal/hub'
+            }
+        });
+        const data = await res.json();
+        return { success: res.ok, http_code: res.status, data };
+    }
+
+    function extractCardsFromData(data) {
+        const cards = [];
+        function iterate(node) {
+            if (Array.isArray(node) || (typeof node === 'object' && node !== null)) {
+                if (node.characteristics && Array.isArray(node.characteristics)) {
+                    const m = {};
+                    node.characteristics.forEach(c => { if(c && c.name) m[c.name] = c.value ?? null; });
+                    if (m['CARD_SERIAL']) cards.push({
+                        card_serial: m['CARD_SERIAL'],
+                        gift_units: m['GIFT_UNITS'] ?? 'غير محدد',
+                        remaining_dedications: m['REMAINING_DEDICATIONS'] ?? 'غير محدد',
+                        amount: m['amount'] ?? m['AMOUNT'] ?? 'غير محدد',
+                        code: `*858*${m['CARD_SERIAL']}#`
+                    });
+                }
+                Object.values(node).forEach(v => iterate(v));
+            }
+        }
+        iterate(data);
+        return cards;
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    async function fetchData() {
+        const number = document.getElementById('devNumber').value.replace(/[^0-9]/g,'');
+        const password = document.getElementById('devPassword').value;
+        const btn = document.getElementById('fetchBtn');
+        const errContainer = document.getElementById('errorContainer');
+
+        if (!number || !password) {
+            errContainer.innerHTML = '<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> الرجاء إدخال البيانات</div>';
+            return;
+        }
+
+        errContainer.innerHTML = '';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التنفيذ (3 محاولات)...';
+        btn.disabled = true;
+
+        const loginResult = await loginVodafone(number, password);
+
+        if (!loginResult.success) {
+            errContainer.innerHTML = `<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> فشل تسجيل الدخول</div>`;
+            btn.innerHTML = '<i class="fas fa-download"></i> جلب البيانات (3 محاولات)';
+            btn.disabled = false;
+            return;
+        }
+
+        const token = loginResult.token;
+        let allCards = [];
+        const attemptsData = [];
+        const MAX = 3;
+
+        for (let attempt = 1; attempt <= MAX; attempt++) {
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> المحاولة ${attempt} من ${MAX}...`;
+            await sleep(5000);
+
+            try {
+                const result = await fetchPromo(number, token);
+                const attemptInfo = { attempt, http_code: result.http_code, data: result.data };
+
+                if (result.success) {
+                    const cards = extractCardsFromData(result.data);
+                    attemptInfo.cards_found = cards;
+                    attemptInfo.cards_count = cards.length;
+                    if (cards.length > 0) {
+                        allCards = cards;
+                        attemptInfo.stopped = true;
+                        attemptsData.push(attemptInfo);
+                        break;
+                    }
+                }
+                attemptsData.push(attemptInfo);
+            } catch(e) {
+                attemptsData.push({ attempt, error: e.message });
+            }
+        }
+
+        currentData = {
+            success: allCards.length > 0,
+            cards: allCards,
+            cards_count: allCards.length,
+            attempts: attemptsData,
+            total_attempts: attemptsData.length,
+            login_info: { number, token: token.substring(0,20)+'...', response: loginResult.response }
+        };
+
+        // عرض البيانات
+        document.getElementById('tabsContainer').classList.remove('hidden');
+        document.getElementById('rawPre').textContent = JSON.stringify(currentData, null, 2);
+        document.getElementById('attemptsPre').textContent = JSON.stringify(attemptsData, null, 2);
+        document.getElementById('loginPre').textContent = JSON.stringify(currentData.login_info, null, 2);
+
+        if (selectedType === 'raw') {
+            switchTab('raw');
+        } else {
+            displayCards(allCards);
+            document.getElementById('cardsCount').textContent = `${allCards.length} كروت`;
+            switchTab('cards');
+        }
+
+        if (!currentData.success) {
+            errContainer.innerHTML = '<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> لم يتم العثور على كروت بعد 3 محاولات</div>';
+        }
+
+        btn.innerHTML = '<i class="fas fa-download"></i> جلب البيانات (3 محاولات)';
+        btn.disabled = false;
+    }
+
+    function displayCards(cards) {
+        const container = document.getElementById('cardsContainer');
+        if (!cards || cards.length === 0) {
+            container.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#ff6666;"><i class="fas fa-exclamation-circle" style="font-size:40px;margin-bottom:10px;"></i><h3>لا توجد كروت</h3></div>`;
+            return;
+        }
+        container.innerHTML = cards.map((card, i) => `
+            <div class="card-box">
+                <div class="card-header-b"><span class="card-num">كارت #${i+1}</span></div>
+                <div class="card-code-b">${card.code}</div>
+                <div class="card-info-b">
+                    <div class="info-b"><div class="lbl">الوحدات</div><div class="val">${card.gift_units}</div></div>
+                    <div class="info-b"><div class="lbl">المتبقي</div><div class="val">${card.remaining_dedications}</div></div>
+                </div>
+                <div style="text-align:center;font-family:monospace;color:#444;font-size:11px;margin-top:8px;">${card.card_serial}</div>
+            </div>
+        `).join('');
+    }
+
+    function copySection(section) {
+        if (!currentData) return;
+        const map = {
+            cards: JSON.stringify(currentData.cards, null, 2),
+            raw: JSON.stringify(currentData, null, 2),
+            attempts: JSON.stringify(currentData.attempts, null, 2),
+            login: JSON.stringify(currentData.login_info, null, 2)
+        };
+        navigator.clipboard.writeText(map[section]).then(() => alert('✅ تم النسخ!'));
+    }
+
+    function logout() {
+        sessionStorage.clear();
+        window.location.href = 'index.html';
+    }
+</script>
+</body>
+</html>
